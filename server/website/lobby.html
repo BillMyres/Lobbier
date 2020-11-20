@@ -1,0 +1,44 @@
+<style><%- include("src/css/style.css"); %></style>
+<%- include('widgets/logout_box.html', { user: user }); %>
+
+<script type="text/javascript">
+  function sendMessage(){
+    let context = {};
+    let http = new XMLHttpRequest();
+    let element = document.querySelector("#message_input");
+
+    http.open("POST", "", true);
+    http.setRequestHeader("Content-Type", "application/json");
+
+    context.message = element.value;
+
+    http.send(JSON.stringify(context));
+
+    http.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        console.log("Sent message successfully! " + this.responseText);
+        window.location.reload();
+      }
+    };
+  }
+</script>
+
+<title><%= title %></title>
+<p><%= title %></p>
+<hr />
+
+<div id="messages">
+  <% for(let message of messages) { %>
+    <div class="message">
+      <p>
+        <%= message.date %> -
+        <b><%= message.owner %>:</b>
+        <%= message.message %>
+      </p>
+    </div>
+  <% } %>
+</div>
+<div>
+  <input id="message_input" type="text" name="message" placeholder="Message" />
+  <button type="buttom" onclick="sendMessage();">Send</button>
+</div>

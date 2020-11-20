@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      <%= locals.title?title:"Missing title" %>
+    </title>
+    <%= locals.stylesheet?stylesheet:"" %>
+    <%= locals.javascript?javascript:"" %>
+  </head>
+  <body>
+    <%= locals.content?content:"" %>
+  </body>
+</html>

@@ -22,7 +22,10 @@ spec:
             - name: ADMINER_DESIGN
               value: nette
             - name: ADMINER_DEFAULT_SERVER
-              value: postgres-service
+              valueFrom:
+                secretKeyRef:
+                  name: application-secrets
+                  key: PGHOST
           ports:
             - name: http
               containerPort: 8080

@@ -1,0 +1,46 @@
+<style><%- include("src/css/style.css"); %></style>
+<%- include('widgets/logout_box.html', { user: user }); %>
+
+<script type="text/javascript">
+  function createLobby(){
+    let name = window.prompt('Enter lobby name:');
+
+    let context = {};
+    let http = new XMLHttpRequest();
+    let element = document.querySelector("#message_input");
+
+    http.open("POST", "", true);
+    http.setRequestHeader("Content-Type", "application/json");
+
+    context.new_lobby = name;
+
+    http.send(JSON.stringify(context));
+
+    http.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        console.log("Sent message successfully! " + this.responseText);
+
+        if(this.responseText === "refresh"){
+          window.location.reload();
+        }
+      }
+    };
+  }
+</script>
+
+<title>Dashboard</title>
+<p>Dashboard</p>
+
+<hr />
+
+<div id="dashboard">
+  <p>Lobbies</p>
+  <div id="lobbies">
+    <% for(let lobby of lobbies) { %>
+      <a href="/lobby/<%= lobby.id %>/">
+        <p><%= lobby.id %>: <%= lobby.name %> (<%= lobby.owner %>)</p>
+      </a>
+    <% } %>
+    <button type="button" onclick="createLobby();">New Lobby</button>
+  </div>
+</div>

@@ -1,29 +1,29 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: postgres-pv-volume
+  name: server-pv-volume
   labels:
     type: local
-    app: postgres
+    app: server
 spec:
-  storageClassName: postgres-storage
+  storageClassName: server-storage
   capacity:
     storage: 5Gi
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/mnt/data"
+    path: "/mnt/server-data"
 
 ---
 
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-pv-claim
+  name: server-pv-claim
   labels:
-    app: postgres
+    app: server
 spec:
-  storageClassName: postgres-storage
+  storageClassName: server-storage
   accessModes:
     - ReadWriteMany
   resources:
@@ -35,57 +35,72 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: server
   template:
     metadata:
       labels:
-        app: postgres
+        app: server
     spec:
       volumes:
-        - name: postgresdb
+        - name: server-data
           persistentVolumeClaim:
-            claimName: postgres-pv-claim
+            claimName: server-pv-claim
       containers:
-        - name: postgres
-          image: postgres
+        - name: server
+          image: node
           imagePullPolicy: "IfNotPresent"
+          command:
+            - /bin/sh
+            - /root/start-server.sh
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: postgresdb
+            - mountPath: /root
+              name: server-data
           env:
-            - name: POSTGRES_DB
+            - name: PGHOST
               valueFrom:
                 secretKeyRef:
                   name: application-secrets
-                  key: PGDATABASE
-            - name: POSTGRES_USER
+                  key: PGHOST
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: application-secrets
+                  key: PGPORT
+            - name: PGUSER
               valueFrom:
                 secretKeyRef:
                   name: application-secrets
                   key: PGUSER
-            - name: POSTGRES_PASSWORD
+            - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
                   name: application-secrets
                   key: PGPASSWORD
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: application-secrets
+                  key: PGDATABASE
           ports:
-            - name: psql
-              containerPort: 5432
+            - name: svr
+              containerPort: 8000
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: server-service
 spec:
+  type: NodePort
   selector:
-    app: postgres
+    app: server
   ports:
     - protocol: TCP
-      port: 5432
+      nodePort: 30443
+      port: 8000
