@@ -1,8 +1,17 @@
+/**
+ * Stylesheet for the lobbier website
+ * Created for project Lobbier: https://github.com/BillMyres/Lobbier
+ * @author Thomas vanBommel
+ * @since 11-2020
+ */
+
+ /* get rid of default padding */
 body {
   margin: 0;
   padding: 0;
 }
 
+/* style the logout box */
 #logout_box {
   background-color: white;
   border-radius: 10px;
@@ -13,14 +22,7 @@ body {
   top: 10px;
 }
 
-#content {
-  width: 100%;
-  height: 100vh;
-  background-color: black;
-}
-
-#game {}
-
+/* chat box */
 #chat {
   background-color: white;
   width: max-content;

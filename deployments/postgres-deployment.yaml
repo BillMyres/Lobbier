@@ -1,3 +1,52 @@
+##
+ # PostgreSQL Kubernetes resources
+ # Created for project Lobbier: https://github.com/BillMyres/Lobbier
+ # @author Thomas vanBommel
+ # @since 11-2020
+ ##
+
+# ConfigMap to store the requred tables to create when no database exists
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  initdb.sql: |
+    CREATE TABLE public.users (
+      username text NOT NULL,
+      password text NOT NULL,
+      id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 0 MINVALUE 0 MAXVALUE 9999999999 CACHE 1 ),
+      CONSTRAINT id PRIMARY KEY (id),
+      CONSTRAINT username UNIQUE (username));
+
+    CREATE TABLE public.lobbies (
+      name text NOT NULL,
+      id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 0 MINVALUE 0 MAXVALUE 9999999999 CACHE 1 ),
+      owner text NOT NULL,
+      CONSTRAINT lobbies_pkey PRIMARY KEY (id),
+      CONSTRAINT owner FOREIGN KEY (owner)
+          REFERENCES public.users (username) MATCH SIMPLE
+          ON UPDATE NO ACTION
+          ON DELETE CASCADE
+          NOT VALID);
+
+    CREATE TABLE public.messages (
+      lobby bigint NOT NULL,
+      owner text NOT NULL,
+      message text NOT NULL,
+      date text NOT NULL,
+      CONSTRAINT lobby FOREIGN KEY (lobby)
+          REFERENCES public.lobbies (id) MATCH SIMPLE
+          ON UPDATE NO ACTION
+          ON DELETE CASCADE,
+      CONSTRAINT owner FOREIGN KEY (owner)
+          REFERENCES public.users (username) MATCH SIMPLE
+          ON UPDATE NO ACTION
+          ON DELETE NO ACTION);
+
+---
+
+# storage requirements for database
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -16,6 +65,7 @@ spec:
 
 ---
 
+# storage claim for database
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -32,6 +82,7 @@ spec:
 
 ---
 
+# postgres deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,6 +101,9 @@ spec:
         - name: postgresdb
           persistentVolumeClaim:
             claimName: postgres-pv-claim
+        - name: initdb
+          configMap:
+            name: postgres-config
       containers:
         - name: postgres
           image: postgres
@@ -57,6 +111,8 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgresdb
+            - mountPath: /docker-entrypoint-initdb.d
+              name: initdb
           env:
             - name: POSTGRES_DB
               valueFrom:
@@ -79,6 +135,7 @@ spec:
 
 ---
 
+# expose postgres service to other nodes
 apiVersion: v1
 kind: Service
 metadata:

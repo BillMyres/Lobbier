@@ -1,3 +1,11 @@
+##
+ # Server deployment for NodeJS server
+ # Created for project Lobbier: https://github.com/BillMyres/Lobbier
+ # @author Thomas vanBommel
+ # @since 11-2020
+ ##
+
+# PersistentVolume for application code storage
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -16,6 +24,7 @@ spec:
 
 ---
 
+# PersistentVolumeClaim to claim storage for the deployment
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -32,6 +41,7 @@ spec:
 
 ---
 
+# NodeJS deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,9 +64,9 @@ spec:
         - name: server
           image: node
           imagePullPolicy: "IfNotPresent"
-          command:
-            - /bin/sh
-            - /root/start-server.sh
+          command: ["/bin/sh", "-c"]
+          args:
+            - cd /root && npm install && node app.js
           volumeMounts:
             - mountPath: /root
               name: server-data
@@ -92,6 +102,7 @@ spec:
 
 ---
 
+# expose NodeJS deployment to the public
 apiVersion: v1
 kind: Service
 metadata:

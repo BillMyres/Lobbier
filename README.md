@@ -20,9 +20,7 @@ Lobby (pod) based chat room / game
 
 <!-- ABOUT THE PROJECT -->
 ## About the Project
-I played around a bit this summer (2020) with Kubernetes. It was an instant hit
-thanks to my love for Docker. This is a fun project to try to integrate
-Kubernetes with a project for my portfolio and to share with others.
+This is a fun project to try to integrateKubernetes with a project for my portfolio and to share with others.
 
 
 ### Project scope:
@@ -37,6 +35,13 @@ This project uses a combination of some of my favourite tech out today:
 * [PostgreSQL](https://www.postgresql.org/): Used to store user data
 * [NodeJS](https://nodejs.org/en/): Used for network communication + Kubernetes
 changes
+  * [cookie-session](https://www.npmjs.com/package/cookie-session): Simple cookie-based session middleware.
+  * [passport-local](https://www.npmjs.com/package/passport-local): Passport strategy for authenticating with a username and password.
+  * [passport](https://www.npmjs.com/package/passport): Passport is Express-compatible authentication middleware for Node.js.
+  * [express](https://www.npmjs.com/package/express): Fast, unopinionated, minimalist web framework for node.
+  * [bcrypt](https://www.npmjs.com/package/bcrypt): A library to help you hash passwords.
+  * [ejs](https://www.npmjs.com/package/ejs): Embedded JavaScript templates
+  * [pg](https://www.npmjs.com/package/pg): Non-blocking PostgreSQL client for Node.js. Pure JavaScript and optional native libpq bindings.
 * [Kubernetes](https://kubernetes.io/): Used as the "backbone", CRUD VMs all day
   * [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/): Local
   version of Kubernetes
@@ -46,6 +51,7 @@ changes
     * [posgres](https://hub.docker.com/_/postgres): PostgreSQL image
     * [adminer](https://hub.docker.com/_/adminer): Database management tool
     (used to modify the database with ease)
+    * [node](https://hub.docker.com/_/node): JavaScript server back-end
 * [GitHub](https://github.com/): Used for project version control
 
 
@@ -53,7 +59,11 @@ changes
 * [x] **11-16-2020** Create database
   * [postgres-deployment.yaml](deployments/postgres-deployment.yaml)
   * [adminer-deployment.yaml](deployments/adminer-deployment.yaml)
-* [ ] **11-19-2020** Create server
+* [x] **11-19-2020** Create server (+1 day)
+  * [application-secrets.yaml](deployments/application-secrets.yaml)
+  * [server-deployment.yaml](deployments/server-deployment)
+  * [website](website)
+  * [app.js](app.js)
 * [ ] **11-23-2020** Create lobby
 * [ ] **11-25-2020** Integrate server + lobby
 * [ ] **11-26-2020** Testing
@@ -100,8 +110,16 @@ routing engine, and another for the Node "lobby" pods.
 
 
 #### Resources
-[postgres-deployment.yaml](deployments/postgres-deployment.yaml)
+[application-secrets.yaml](deployments/application-secrets.yaml)
 * Secret for storing Postgres login data and database name
+
+[server-deployment.yaml](deployments/server-deployment.yaml)
+* PersistentVolume for storage
+* PersistentVolumeClaim for code storage
+* Deployment for Postgres NodeJS image with the server files
+* Service to expose application to the public
+
+[postgres-deployment.yaml](deployments/postgres-deployment.yaml)
 * PersistentVolume for application storage
 * PersistentVolumeClaim for Postgres data
 * Deployment for Postgres database
@@ -121,52 +139,28 @@ Adminer (formerly phpMinAdmin) is a database management in a single PHP file.
 It's lightweight and has a great UI (...well multiple UI's) which helps get
 things done quickly.
 
-
-Adminer make adding tables really easy, including adding sequences when needed
-for "self-incrementing" columns. With just a few steps I set up the database
-required for this project. (All in a single form! Wow)
-
-![Adminer table creation form][adminer-create-table]
-
 ## Installation
 Kubernetes will do most of the work for you. Just run these commands to get up
 and running quickly!
 
 ```bash
-#1 Navigate to the project directory
-#2 Create PostgreSQL resources (Secret, PersistentVolume,
-#  PersistentVolumeClaim, Deployment, and Service)
-#3 Create Adminer resources (Deployment and Service)
-
 cd $PROJECT_DIR #1
-kubectl create -f deployments/postgres-deployment.yaml #2
-kubectl create -f deployments/adminer-deployment.yaml #3
-## more soon ##
-
+kubectl create -f deployments/application-secrets.yaml
+kubectl create -f deployments/postgres-deployment.yaml
+kubectl create -f deployments/server-deployment.yaml
+kubectl create -f deployments/adminer-deployment.yaml # not required
 ```
 
 ## Usage
-To access Adminer and access the PostgreSQL database type the following:
+To access public, accessable services type the following:
 ```bash
-minikube service adminer-service
+minikube service list
 ```
-You should then receive a link to the Adminer front-end (it may open it for you in your default browser):
+You should then receive a list of links to the public services running on minikube
 
-Adminer service response
-![Adminer-service command response][adminer-service]
-
-Adminer login page
-![Adminer login page][adminer-login]
-
-Login values (found in postgres-deployment.yaml):
-* System: PostgreSQL
-* Server: postgres-service
-* Username: lobbier
-* Password: 12345
-* Database: lobbier_users
+Minikube service response
+![Minikube services response][minikube-services]
 
 <!-- VALUES -->
-[adminer-service]: documentation/images/adminer-service.png
-[adminer-login]: documentation/images/adminer-login.png
-[adminer-create-table]: documentation/images/adminer-create-table.png
+[minikube-services]: documentation/images/minikube-services.png
 [kubernetes-dashboard]: documentation/images/dashboard.png
