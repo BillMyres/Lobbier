@@ -13,16 +13,18 @@ metadata:
 data:
   initdb.sql: |
     CREATE TABLE public.users (
-      username text NOT NULL,
-      password text NOT NULL,
-      id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 0 MINVALUE 0 MAXVALUE 9999999999 CACHE 1 ),
+      username TEXT NOT NULL,
+      password TEXT NOT NULL,
+      id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 0 MINVALUE 0 MAXVALUE 9999999999 CACHE 1 ),
+      position_x NUMERIC NOT NULL DEFAULT 0.00,
+      position_y NUMERIC NOT NULL DEFAULT 0.00,
       CONSTRAINT id PRIMARY KEY (id),
       CONSTRAINT username UNIQUE (username));
 
     CREATE TABLE public.lobbies (
-      name text NOT NULL,
-      id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 0 MINVALUE 0 MAXVALUE 9999999999 CACHE 1 ),
-      owner text NOT NULL,
+      name TEXT NOT NULL,
+      id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 0 MINVALUE 0 MAXVALUE 9999999999 CACHE 1 ),
+      owner TEXT NOT NULL,
       CONSTRAINT lobbies_pkey PRIMARY KEY (id),
       CONSTRAINT owner FOREIGN KEY (owner)
           REFERENCES public.users (username) MATCH SIMPLE
@@ -31,10 +33,10 @@ data:
           NOT VALID);
 
     CREATE TABLE public.messages (
-      lobby bigint NOT NULL,
-      owner text NOT NULL,
-      message text NOT NULL,
-      date text NOT NULL,
+      lobby BIGINT NOT NULL,
+      owner TEXT NOT NULL,
+      message TEXT NOT NULL,
+      date TEXT NOT NULL,
       CONSTRAINT lobby FOREIGN KEY (lobby)
           REFERENCES public.lobbies (id) MATCH SIMPLE
           ON UPDATE NO ACTION
@@ -43,6 +45,18 @@ data:
           REFERENCES public.users (username) MATCH SIMPLE
           ON UPDATE NO ACTION
           ON DELETE NO ACTION);
+
+    CREATE TABLE public.attendance (
+      lobby BIGINT NOT NULL,
+      player BIGINT NOT NULL,
+      CONSTRAINT lobby FOREIGN KEY (lobby)
+          REFERENCES public.lobbies (id) MATCH SIMPLE
+          ON UPDATE NO ACTION
+          ON DELETE CASCADE,
+      CONSTRAINT player FOREIGN KEY (player)
+          REFERENCES public.users (id) MATCH SIMPLE
+          ON UPDATE NO ACTION
+          ON DELETE CASCADE);
 
 ---
 
@@ -61,7 +75,7 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/mnt/data"
+    path: "/mnt/psql-data"
 
 ---
 

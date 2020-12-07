@@ -4,5 +4,8 @@
   - @since 11-2020
   -->
 <title>Home</title>
+<style><%- include("src/css/style.css"); %></style>
 
 <a href="login">Login</a> or <a href="create">Create Account</a>
+
+<%- include('widgets/footer.html', { user: user }); %>

@@ -7,29 +7,96 @@
 <%- include('widgets/logout_box.html', { user: user }); %>
 
 <script type="text/javascript">
+  window.onload = init;
+  window.onresize = resize;
+
+  let canvas;
+  let ctx;
+
+  function init(){
+    canvas = document.querySelector("#canvas");
+
+    canvas.addEventListener("click", (click) => {
+      let x = click.x - canvas.offsetLeft - canvas.clientWidth / 2;
+      let y = click.y - canvas.offsetTop - canvas.clientHeight / 2;
+      console.log("clicked: ", x, y);
+
+      ajaxCall("POST", "/game/", { action: "move", x: x, y: y }, res => {
+        console.log(res);
+        update();
+      });
+    });
+
+    resize();
+    window.setInterval(update, 1000);
+  }
+
+  function update(){
+    ajaxCall("GET", "/game?lobby=<%= lobby_id %>", "", res => {
+      console.log("Server response: ", res);
+
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+      for(let user of JSON.parse(res)){
+        console.log(user.username);
+        console.log(user.position_x);
+        console.log(user.position_y);
+
+        let posx = parseFloat(user.position_x) + canvas.clientWidth / 2;
+        let posy = parseFloat(user.position_y) + canvas.clientHeight / 2;
+
+        ctx.fillStyle="#ff0000";
+        ctx.fillRect(posx, posy, 10, 10);
+
+        ctx.fillText(user.username, posx, posy);
+      }
+    });
+  }
+
+  function resize(){
+    if(canvas){
+      canvas.style.height = canvas.clientWidth;
+      ctx = canvas.getContext("2d");
+
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+
+    update();
+  }
+
   function sendMessage(){
-    let context = {};
+  let element = document.querySelector("#message_input");
+
+    ajaxCall("POST", "", { message: element.value }, res => {
+      console.log("Server response: ", res);
+      window.location.reload();
+    });
+  }
+
+  function ajaxCall(method, action, data, callback){
+    // let context = {};
     let http = new XMLHttpRequest();
     let element = document.querySelector("#message_input");
 
-    http.open("POST", "", true);
+    http.open(method, action, true);
     http.setRequestHeader("Content-Type", "application/json");
 
-    context.message = element.value;
+    // context.message = data;
 
-    http.send(JSON.stringify(context));
+    http.send(JSON.stringify(data));
 
     http.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
-        console.log("Sent message successfully! " + this.responseText);
-        window.location.reload();
+        callback(this.responseText);
+        // window.location.reload();
       }
     };
   }
 </script>
 
-<title><%= title %></title>
-<p><%= title %></p>
+<title>Lobby: <%= lobby_id %></title>
+<p>Lobby: <%= lobby_id %></p>
 <hr />
 
 <div id="messages">
@@ -38,7 +105,7 @@
       <p>
         <%= message.date %> -
         <b><%= message.owner %>:</b>
-        <%= message.message %>
+        <%= decodeURIComponent(message.message) %>
       </p>
     </div>
   <% } %>
@@ -47,3 +114,10 @@
   <input id="message_input" type="text" name="message" placeholder="Message" />
   <button type="buttom" onclick="sendMessage();">Send</button>
 </div>
+
+<p>Game:</p>
+<div id="game_container" class="border">
+  <canvas id="canvas"></canvas>
+</div>
+
+<%- include('widgets/footer.html', { user: user }); %>

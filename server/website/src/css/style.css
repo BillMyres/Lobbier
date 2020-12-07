@@ -29,9 +29,24 @@ body {
   padding: 10px;
 }
 
+#game_container{
+  width:80vmin;
+  margin:0 auto;
+}
+
+#canvas{
+  width:100%;
+}
+
 .flex { display: flex; }
 .flex-big { flex: 1; }
 .flex-vertical { flex-direction: column; }
 
 .outline { outline:2px solid black; }
 .border { border:2px solid black; }
+
+.absolute { position:absolute; }
+.fixed { position:fixed; }
+
+.bottom-0 { bottom:0; }
+.left-0 { left:0; }

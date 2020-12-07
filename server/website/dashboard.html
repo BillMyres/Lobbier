@@ -24,10 +24,7 @@
     http.onreadystatechange = function() {
       if (this.readyState === 4 && this.status === 200) {
         console.log("Sent message successfully! " + this.responseText);
-
-        if(this.responseText === "refresh"){
-          window.location.reload();
-        }
+        window.location.reload();
       }
     };
   }
@@ -49,3 +46,5 @@
     <button type="button" onclick="createLobby();">New Lobby</button>
   </div>
 </div>
+
+<%- include('widgets/footer.html', { user: user }); %>
